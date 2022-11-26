@@ -4,87 +4,91 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-type Book struct {
-	Id       string  `json:"id"`
-	NameBook string  `json:"namebook"`
-	Title    string  `json:"title"`
-	Author   *Author `json:"author"`
+type Account struct {
+	UserName    string       `json:"username"`
+	PassWord    string       `json:"password"`
+	Information *Information `json:"ionformation"`
 }
-type Author struct {
-	FistName string `json:"fistname"`
-	LastName string `json:"lastname"`
+type Information struct {
+	Email string `json:"email"`
+	Phone string `json:"Phone"`
 }
 
-var Listbooks []Book
+var accounts []Account
 
-func getAllBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
-	json.NewEncoder(w).Encode(Listbooks)
+func getAllBooks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode(accounts)
 }
-func getBookID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
+func GetByUserName(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 	p := mux.Vars(r)
-	for _, valude := range Listbooks {
-		if valude.Id == p["id"] {
+	for _, valude := range accounts {
+		if valude.UserName == p["username"] {
 			json.NewEncoder(w).Encode(valude)
 			return
 		}
 
 	}
+	f := "Not found"
+	json.NewEncoder(w).Encode(f)
+	return
 }
-func createBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
-	var book Book
-	_ = json.NewDecoder(r.Body).Decode(&book)
-	book.Id = strconv.Itoa(rand.Intn(1000000000))
-	Listbooks = append(Listbooks, book)
-	json.NewEncoder(w).Encode(book)
-}
-func UpdataBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
+func CreateAccount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 
+	var accountt Account
+	_ = json.NewDecoder(r.Body).Decode(&accountt)
+	accounts = append(accounts, accountt)
+	json.NewEncoder(w).Encode(accountt)
+}
+func UpdataAccount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-Type", "application/json")
 	p := mux.Vars(r)
-	for i, valude := range Listbooks {
-		if valude.Id == p["id"] {
-			Listbooks = append(Listbooks[:i], Listbooks[i+1:]...)
-			var book Book
-			_ = json.NewDecoder(r.Body).Decode(&book)
-			book.Id = p["id"]
-			Listbooks = append(Listbooks, book)
-			json.NewEncoder(w).Encode(book)
+	for i, valude := range accounts {
+		if valude.UserName == p["username"] {
+			accounts = append(accounts[:i], accounts[i+1:]...)
+			var account Account
+			_ = json.NewDecoder(r.Body).Decode(&account)
+			account.UserName = p["username"]
+			accounts = append(accounts, account)
+			json.NewEncoder(w).Encode(account)
 			return
 		}
 	}
-}
-func deleteBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-Type", "application/json")
 
+}
+func DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-Type", "application")
 	p := mux.Vars(r)
-	for i, valude := range Listbooks {
-		if valude.Id == p["id"] {
-			Listbooks = append(Listbooks[:i], Listbooks[i+1:]...)
-			break
+	for i, valude := range accounts {
+		if valude.UserName == p["username"] {
+			accounts = append(accounts[:i], accounts[i+1:]...)
+			t := "Delete Succesfull"
+			json.NewEncoder(w).Encode(t)
+			return
 		}
+
 	}
+	t := "Delete Faile"
+	json.NewEncoder(w).Encode(t)
+	return
 
 }
 func main() {
 	r := mux.NewRouter()
-	Listbooks = append(Listbooks, Book{Id: "1", NameBook: "Conna", Title: "Conan chapter 12", Author: &Author{FistName: "asdv", LastName: "123asd"}})
-	Listbooks = append(Listbooks, Book{Id: "2", NameBook: "Doaremon", Title: "Doraemon chapter 9", Author: &Author{FistName: "hadasdsd", LastName: "dsad23asd"}})
-	r.HandleFunc("/books", getAllBook).Methods("GET")
-	r.HandleFunc("/books/{id}", getBookID).Methods("GET")
-	r.HandleFunc("/createBook", createBook).Methods("POST")
-	r.HandleFunc("/upBooks/{id}", UpdataBook).Methods("PUT")
-	r.HandleFunc("/deleteBook/{id}", deleteBook).Methods("DELETE")
+	accounts = append(accounts, Account{UserName: "admin", PassWord: "admin2", Information: &Information{Email: "admin@gmail.com", Phone: "098312312412"}})
+	r.HandleFunc("/Accounts", getAllBooks).Methods("GET")
+	r.HandleFunc("/Account/{username}", GetByUserName).Methods("GET")
+	r.HandleFunc("/CreateAccount", CreateAccount).Methods("POST")
+	r.HandleFunc("/UpdataAccount/{username}", UpdataAccount).Methods("PUT")
+	r.HandleFunc("/Delete/{username}", DeleteAccount).Methods("DeLete")
 
-	fmt.Printf("Listen to Server at Port 9081")
-	log.Fatal(http.ListenAndServe(":9081", r))
+	fmt.Printf("Listen To Server in Port 8088 !")
+	log.Fatal(http.ListenAndServe(":8088", r))
 }
